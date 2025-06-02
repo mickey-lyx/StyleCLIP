@@ -105,7 +105,7 @@ def main(args):
             with torch.no_grad():
                 img_gen, _ = g_ema([latent], input_is_latent=True, randomize_noise=False, input_is_stylespace=args.work_in_stylespace)
 
-            torchvision.utils.save_image(img_gen, f"results/{str(i).zfill(5)}.jpg", normalize=True, range=(-1, 1))
+            torchvision.utils.save_image(img_gen, f"results/{str(i).zfill(5)}.jpg", normalize=True, value_range=(-1, 1))
 
     if args.mode == "edit":
         final_result = torch.cat([img_orig, img_gen])
