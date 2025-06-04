@@ -26,7 +26,10 @@ def get_lr(t, initial_lr, rampdown=0.25, rampup=0.05):
 
 def main(args):
     ensure_checkpoint_exists(args.ckpt)
-    text_inputs = torch.cat([clip.tokenize(args.description)]).cuda()
+    if args.break_down_expression:
+        text_inputs_list = [torch.cat([clip.tokenize(component_description)]).cuda() for component_description in args.component_descriptions]
+    else:
+        text_inputs = torch.cat([clip.tokenize(args.description)]).cuda()
     os.makedirs(args.results_dir, exist_ok=True)
 
     g_ema = Generator(args.stylegan_size, 512, 8)
@@ -76,7 +79,10 @@ def main(args):
 
         img_gen, _ = g_ema([latent], input_is_latent=True, randomize_noise=False, input_is_stylespace=args.work_in_stylespace)
 
-        c_loss = clip_loss(img_gen, text_inputs)
+        if args.break_down_expression:
+            c_loss = sum([clip_loss(img_gen, text_inputs_list[c]) for c in range(len(text_inputs_list))]) / len(text_inputs_list)
+        else:
+            c_loss = clip_loss(img_gen, text_inputs)
 
         if args.id_lambda > 0:
             i_loss = id_loss(img_gen, img_orig)[0]
