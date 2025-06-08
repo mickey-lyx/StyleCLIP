@@ -215,7 +215,7 @@ def main(args):
             torchvision.utils.save_image(img_gen, f"results/{str(i).zfill(5)}.jpg", normalize=True, value_range=(-1, 1))
 
     if args.mode == "edit":
-        final_result = torch.cat([img_orig, img_gen]) 
+        final_result = img_gen 
     else:
         final_result = img_gen
 
