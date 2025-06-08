@@ -138,6 +138,8 @@ def main(args):
         latent = latent_code_init.detach().clone()
         latent.requires_grad = True
 
+    print(f"GPU memory before loading loss functions: {torch.cuda.memory_allocated(0)/1024**3:.2f} GB")
+
     clip_loss = CLIPLoss(args)
     id_loss = IDLoss(args)
 
@@ -150,6 +152,7 @@ def main(args):
 
     pbar = tqdm(range(args.step))
     print("Start optimization")
+    print(f"GPU memory before optimization: {torch.cuda.memory_allocated(0)/1024**3:.2f} GB")
 
     for i in pbar:
         t = i / args.step
