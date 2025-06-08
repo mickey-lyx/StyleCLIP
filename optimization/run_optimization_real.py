@@ -16,7 +16,7 @@ from style_criteria.id_loss import IDLoss
 from mapper.training.train_utils import STYLESPACE_DIMENSIONS
 from style_models.stylegan2.model import Generator
 import clip
-from utils import ensure_checkpoint_exists
+from style_util import ensure_checkpoint_exists
 
 # Add these imports for e4e encoding
 from encoder4editing.models.psp import pSp

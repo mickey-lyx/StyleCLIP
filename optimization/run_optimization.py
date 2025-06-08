@@ -12,7 +12,7 @@ from style_criteria.id_loss import IDLoss
 from mapper.training.train_utils import STYLESPACE_DIMENSIONS
 from style_models.stylegan2.model import Generator
 import clip
-from utils import ensure_checkpoint_exists
+from style_util import ensure_checkpoint_exists
 
 STYLESPACE_INDICES_WITHOUT_TORGB = [i for i in range(len(STYLESPACE_DIMENSIONS)) if i not in list(range(1, len(STYLESPACE_DIMENSIONS), 3))]
 
