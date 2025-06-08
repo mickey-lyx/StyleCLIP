@@ -110,6 +110,9 @@ def main(args):
     else:
         latent_code_init = mean_latent.detach().clone().repeat(1, 18, 1)
 
+    # clean cache
+    torch.cuda.empty_cache()
+
     with torch.no_grad():
         img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)
 
