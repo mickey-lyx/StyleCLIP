@@ -73,15 +73,23 @@ def encode_real_image(image_path, e4e_model_path, shape_predictor_path=None):
             randomize_noise=False, 
             return_latents=True
         )
+
+    # get result
+    result_latents = latents[0].detach().clone()
     
-    # 释放e4e模型显存
-    del e4e_net
-    del ckpt
+    # clean up
+    del images, latents, transformed_image
+    del e4e_net, ckpt
+    if shape_predictor is not None:
+        del shape_predictor
+    
+    # clean up
     gc.collect()
     torch.cuda.empty_cache()
     
-    return latents[0], input_image  # Return W+ latent codes and processed image
-
+    return result_latents, input_image
+    
+    
 
 def main(args):
     ensure_checkpoint_exists(args.ckpt)
