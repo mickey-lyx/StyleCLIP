@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from mapper import latent_mappers
-from models.stylegan2.model import Generator
+from style_models.stylegan2.model import Generator
 
 
 def get_keys(d, name):

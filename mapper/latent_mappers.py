@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import Module
 
-from models.stylegan2.model import EqualLinear, PixelNorm
+from style_models.stylegan2.model import EqualLinear, PixelNorm
 
 STYLESPACE_DIMENSIONS = [512 for _ in range(15)] + [256, 256, 256] + [128, 128, 128] + [64, 64, 64] + [32, 32]
 
