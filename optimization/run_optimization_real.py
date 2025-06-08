@@ -132,8 +132,8 @@ def main(args):
     print(f"Latent code device: {latent_code_init.device}")
       
     
-    # # 强制清理和格式化latent_code_init
-    # latent_code_init = latent_code_init.detach().float().contiguous()
+    # 强制清理和格式化latent_code_init
+    latent_code_init = latent_code_init.detach().float().contiguous()
     
     # 在StyleGAN前向传播前清理显存
     gc.collect()
