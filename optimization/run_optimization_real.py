@@ -76,7 +76,19 @@ def encode_real_image(image_path, e4e_model_path, shape_predictor_path=None):
 
     # get result
     result_latents = latents[0].detach().clone()
-    
+
+    # Debug: 检查latent格式
+    print(f"E4E latent shape: {result_latents.shape}")
+    print(f"E4E latent dtype: {result_latents.dtype}")
+    print(f"E4E latent requires_grad: {result_latents.requires_grad}")
+
+    # 确保latent格式正确 - W+空间应该是[1, 18, 512]
+    if result_latents.dim() == 2:  # 如果是[18, 512]，添加batch维度
+        result_latents = result_latents.unsqueeze(0)
+
+    # 强制确保不需要梯度且是float32
+    result_latents = result_latents.detach().float()
+
     # clean up
     del images, latents, transformed_image
     del e4e_net, ckpt
@@ -114,6 +126,12 @@ def main(args):
             getattr(args, 'shape_predictor_path', None)
         )
         print("Successfully encoded real image to W+ latent space")
+        # 确保latent_code_init格式正确
+        print(f"Latent code shape: {latent_code_init.shape}")
+        print(f"Latent code dtype: {latent_code_init.dtype}")
+        print(f"Latent code requires_grad: {latent_code_init.requires_grad}")
+        print(f"Latent code device: {latent_code_init.device}")
+        
     elif args.latent_path:
         latent_code_init = torch.load(args.latent_path).cuda()
     elif args.mode == "edit":
@@ -123,6 +141,13 @@ def main(args):
                                         truncation=args.truncation, truncation_latent=mean_latent)
     else:
         latent_code_init = mean_latent.detach().clone().repeat(1, 18, 1)
+    
+    # 强制清理和格式化latent_code_init
+    latent_code_init = latent_code_init.detach().float().contiguous()
+    
+    # 在StyleGAN前向传播前清理显存
+    gc.collect()
+    torch.cuda.empty_cache()
     
     with torch.no_grad():
         img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)

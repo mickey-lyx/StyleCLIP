@@ -32,10 +32,15 @@ def main(args):
         text_inputs = torch.cat([clip.tokenize(args.description)]).cuda()
     os.makedirs(args.results_dir, exist_ok=True)
 
+    print(f"Initial GPU memory: {torch.cuda.memory_allocated(0)/1024**3:.2f} GB")
+
     g_ema = Generator(args.stylegan_size, 512, 8)
     g_ema.load_state_dict(torch.load(args.ckpt)["g_ema"], strict=False)
     g_ema.eval()
     g_ema = g_ema.cuda()
+    
+    print(f"After StyleGAN loading: {torch.cuda.memory_allocated(0)/1024**3:.2f} GB")
+    
     mean_latent = g_ema.mean_latent(4096)
 
     if args.latent_path:
@@ -47,6 +52,11 @@ def main(args):
                                         truncation=args.truncation, truncation_latent=mean_latent)
     else:
         latent_code_init = mean_latent.detach().clone().repeat(1, 18, 1)
+
+    print(f"After latent_code_init: {torch.cuda.memory_allocated(0)/1024**3:.2f} GB")
+    print(f"Latent code shape: {latent_code_init.shape}")
+    print(f"Latent code dtype: {latent_code_init.dtype}")
+    print(f"Latent code device: {latent_code_init.device}")
 
     with torch.no_grad():
         img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)
@@ -62,8 +72,12 @@ def main(args):
         latent = latent_code_init.detach().clone()
         latent.requires_grad = True
 
+    print(f"GPU memory before loading loss functions: {torch.cuda.memory_allocated(0)/1024**3:.2f} GB")
+
     clip_loss = CLIPLoss(args)
     id_loss = IDLoss(args)
+
+    print(f"GPU memory before optimization: {torch.cuda.memory_allocated(0)/1024**3:.2f} GB")
 
     if args.work_in_stylespace:
         optimizer = optim.Adam(latent, lr=args.lr)
