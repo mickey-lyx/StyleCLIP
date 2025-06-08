@@ -2,3 +2,5 @@
 /latents/
 /results/
 /mine/
+e4e_ffhq_encode.pt
+shape_predictor_68_face_landmarks.dat
