@@ -123,79 +123,82 @@ def main(args):
                                         truncation=args.truncation, truncation_latent=mean_latent)
     else:
         latent_code_init = mean_latent.detach().clone().repeat(1, 18, 1)
+    
+    import time
+    print(latent_code_init.shape)
+    print("start sleep")
+    time.sleep(100000)
+    # with torch.no_grad():
+    #     img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)
 
+    # if args.work_in_stylespace:
+    #     with torch.no_grad():
+    #         _, _, latent_code_init = g_ema([latent_code_init], input_is_latent=True, return_latents=True)
+    #     latent = [s.detach().clone() for s in latent_code_init]
+    #     for c, s in enumerate(latent):
+    #         if c in STYLESPACE_INDICES_WITHOUT_TORGB:
+    #             s.requires_grad = True
+    # else:
+    #     latent = latent_code_init.detach().clone()
+    #     latent.requires_grad = True
 
-    with torch.no_grad():
-        img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)
+    # clip_loss = CLIPLoss(args)
+    # id_loss = IDLoss(args)
 
-    if args.work_in_stylespace:
-        with torch.no_grad():
-            _, _, latent_code_init = g_ema([latent_code_init], input_is_latent=True, return_latents=True)
-        latent = [s.detach().clone() for s in latent_code_init]
-        for c, s in enumerate(latent):
-            if c in STYLESPACE_INDICES_WITHOUT_TORGB:
-                s.requires_grad = True
-    else:
-        latent = latent_code_init.detach().clone()
-        latent.requires_grad = True
+    # if args.work_in_stylespace:
+    #     optimizer = optim.Adam(latent, lr=args.lr)
+    # else:
+    #     optimizer = optim.Adam([latent], lr=args.lr)
 
-    clip_loss = CLIPLoss(args)
-    id_loss = IDLoss(args)
+    # pbar = tqdm(range(args.step))
 
-    if args.work_in_stylespace:
-        optimizer = optim.Adam(latent, lr=args.lr)
-    else:
-        optimizer = optim.Adam([latent], lr=args.lr)
+    # for i in pbar:
+    #     t = i / args.step
+    #     lr = get_lr(t, args.lr)
+    #     optimizer.param_groups[0]["lr"] = lr
 
-    pbar = tqdm(range(args.step))
+    #     img_gen, _ = g_ema([latent], input_is_latent=True, randomize_noise=False, input_is_stylespace=args.work_in_stylespace)
 
-    for i in pbar:
-        t = i / args.step
-        lr = get_lr(t, args.lr)
-        optimizer.param_groups[0]["lr"] = lr
+    #     if args.use_break_down_expression:
+    #         c_loss = sum([clip_loss(img_gen, text_inputs_list[c]) for c in range(len(text_inputs_list))]) / len(text_inputs_list)
+    #     else:
+    #         c_loss = clip_loss(img_gen, text_inputs)
 
-        img_gen, _ = g_ema([latent], input_is_latent=True, randomize_noise=False, input_is_stylespace=args.work_in_stylespace)
+    #     if args.id_lambda > 0:
+    #         i_loss = id_loss(img_gen, img_orig)[0]
+    #     else:
+    #         i_loss = 0
 
-        if args.use_break_down_expression:
-            c_loss = sum([clip_loss(img_gen, text_inputs_list[c]) for c in range(len(text_inputs_list))]) / len(text_inputs_list)
-        else:
-            c_loss = clip_loss(img_gen, text_inputs)
+    #     if args.mode == "edit":
+    #         if args.work_in_stylespace:
+    #             l2_loss = sum([((latent_code_init[c] - latent[c]) ** 2).sum() for c in range(len(latent_code_init))])
+    #         else:
+    #             l2_loss = ((latent_code_init - latent) ** 2).sum()
+    #         loss = c_loss + args.l2_lambda * l2_loss + args.id_lambda * i_loss
+    #     else:
+    #         loss = c_loss
 
-        if args.id_lambda > 0:
-            i_loss = id_loss(img_gen, img_orig)[0]
-        else:
-            i_loss = 0
+    #     optimizer.zero_grad()
+    #     loss.backward()
+    #     optimizer.step()
 
-        if args.mode == "edit":
-            if args.work_in_stylespace:
-                l2_loss = sum([((latent_code_init[c] - latent[c]) ** 2).sum() for c in range(len(latent_code_init))])
-            else:
-                l2_loss = ((latent_code_init - latent) ** 2).sum()
-            loss = c_loss + args.l2_lambda * l2_loss + args.id_lambda * i_loss
-        else:
-            loss = c_loss
+    #     pbar.set_description(
+    #         (
+    #             f"loss: {loss.item():.4f};"
+    #         )
+    #     )
+    #     if args.save_intermediate_image_every > 0 and i % args.save_intermediate_image_every == 0:
+    #         with torch.no_grad():
+    #             img_gen, _ = g_ema([latent], input_is_latent=True, randomize_noise=False, input_is_stylespace=args.work_in_stylespace)
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+    #         torchvision.utils.save_image(img_gen, f"results/{str(i).zfill(5)}.jpg", normalize=True, value_range=(-1, 1))
 
-        pbar.set_description(
-            (
-                f"loss: {loss.item():.4f};"
-            )
-        )
-        if args.save_intermediate_image_every > 0 and i % args.save_intermediate_image_every == 0:
-            with torch.no_grad():
-                img_gen, _ = g_ema([latent], input_is_latent=True, randomize_noise=False, input_is_stylespace=args.work_in_stylespace)
+    # if args.mode == "edit":
+    #     final_result = torch.cat([img_orig, img_gen])
+    # else:
+    #     final_result = img_gen
 
-            torchvision.utils.save_image(img_gen, f"results/{str(i).zfill(5)}.jpg", normalize=True, value_range=(-1, 1))
-
-    if args.mode == "edit":
-        final_result = torch.cat([img_orig, img_gen])
-    else:
-        final_result = img_gen
-
-    return final_result
+    # return final_result
 
 
 
