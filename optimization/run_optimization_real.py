@@ -125,7 +125,7 @@ def main(args):
         getattr(args, 'shape_predictor_path', None)
     )
     print("Successfully encoded real image to W+ latent space")
-    # 确保latent_code_init格式正确
+    # ensure latent_code_init format is correct
     print(f"Latent code shape: {latent_code_init.shape}")
     print(f"Latent code dtype: {latent_code_init.dtype}")
     print(f"Latent code requires_grad: {latent_code_init.requires_grad}")
