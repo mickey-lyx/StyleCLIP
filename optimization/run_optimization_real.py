@@ -74,6 +74,11 @@ def encode_real_image(image_path, e4e_model_path, shape_predictor_path=None):
             return_latents=True
         )
     
+    # 释放e4e模型显存
+    del e4e_net
+    del ckpt
+    torch.cuda.empty_cache()
+    
     return latents[0], input_image  # Return W+ latent codes and processed image
 
 
@@ -110,8 +115,6 @@ def main(args):
     else:
         latent_code_init = mean_latent.detach().clone().repeat(1, 18, 1)
 
-    # clean cache
-    torch.cuda.empty_cache()
 
     with torch.no_grad():
         img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)
