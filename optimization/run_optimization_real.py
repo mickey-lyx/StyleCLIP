@@ -118,39 +118,29 @@ def main(args):
     mean_latent = g_ema.mean_latent(4096)
 
     # Get latent code from real image using e4e encoding
-    if args.image_path:
-        print(f"Encoding real image: {args.image_path}")
-        latent_code_init, processed_image = encode_real_image(
-            args.image_path, 
-            args.e4e_model_path,
-            getattr(args, 'shape_predictor_path', None)
-        )
-        print("Successfully encoded real image to W+ latent space")
-        # 确保latent_code_init格式正确
-        print(f"Latent code shape: {latent_code_init.shape}")
-        print(f"Latent code dtype: {latent_code_init.dtype}")
-        print(f"Latent code requires_grad: {latent_code_init.requires_grad}")
-        print(f"Latent code device: {latent_code_init.device}")
-        
-    elif args.latent_path:
-        latent_code_init = torch.load(args.latent_path).cuda()
-    elif args.mode == "edit":
-        latent_code_init_not_trunc = torch.randn(1, 512).cuda()
-        with torch.no_grad():
-            _, latent_code_init, _ = g_ema([latent_code_init_not_trunc], return_latents=True,
-                                        truncation=args.truncation, truncation_latent=mean_latent)
-    else:
-        latent_code_init = mean_latent.detach().clone().repeat(1, 18, 1)
+    print(f"Encoding real image: {args.image_path}")
+    latent_code_init, processed_image = encode_real_image(
+        args.image_path, 
+        args.e4e_model_path,
+        getattr(args, 'shape_predictor_path', None)
+    )
+    print("Successfully encoded real image to W+ latent space")
+    # 确保latent_code_init格式正确
+    print(f"Latent code shape: {latent_code_init.shape}")
+    print(f"Latent code dtype: {latent_code_init.dtype}")
+    print(f"Latent code requires_grad: {latent_code_init.requires_grad}")
+    print(f"Latent code device: {latent_code_init.device}")
+      
     
-    # 强制清理和格式化latent_code_init
-    latent_code_init = latent_code_init.detach().float().contiguous()
+    # # 强制清理和格式化latent_code_init
+    # latent_code_init = latent_code_init.detach().float().contiguous()
     
     # 在StyleGAN前向传播前清理显存
     gc.collect()
     torch.cuda.empty_cache()
     
-    with torch.no_grad():
-        img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)
+    # with torch.no_grad():
+    #     img_orig, _ = g_ema([latent_code_init], input_is_latent=True, randomize_noise=False)
 
     if args.work_in_stylespace:
         with torch.no_grad():
@@ -192,7 +182,7 @@ def main(args):
             c_loss = clip_loss(img_gen, text_inputs)
 
         if args.id_lambda > 0:
-            i_loss = id_loss(img_gen, img_orig)[0]
+            i_loss = id_loss(img_gen, processed_image)[0]
         else:
             i_loss = 0
 
@@ -221,7 +211,7 @@ def main(args):
             torchvision.utils.save_image(img_gen, f"results/{str(i).zfill(5)}.jpg", normalize=True, value_range=(-1, 1))
 
     if args.mode == "edit":
-        final_result = torch.cat([img_orig, img_gen])
+        final_result = torch.cat([processed_image, img_gen])
     else:
         final_result = img_gen
 
