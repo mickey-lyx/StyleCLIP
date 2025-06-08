@@ -92,8 +92,7 @@ def main(args):
         optimizer.param_groups[0]["lr"] = lr
 
         img_gen, _ = g_ema([latent], input_is_latent=True, randomize_noise=False, input_is_stylespace=args.work_in_stylespace)
-        print(f"img_gen shape: {img_gen.shape}")
-
+        
         if args.use_break_down_expression:
             c_loss = sum([clip_loss(img_gen, text_inputs_list[c]) for c in range(len(text_inputs_list))]) / len(text_inputs_list)
         else:
