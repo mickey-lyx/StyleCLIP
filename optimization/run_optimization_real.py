@@ -1,7 +1,7 @@
 import argparse
 import math
 import os
-
+import gc
 import torch
 import torchvision
 from torch import optim
@@ -77,6 +77,7 @@ def encode_real_image(image_path, e4e_model_path, shape_predictor_path=None):
     # 释放e4e模型显存
     del e4e_net
     del ckpt
+    gc.collect()
     torch.cuda.empty_cache()
     
     return latents[0], input_image  # Return W+ latent codes and processed image
