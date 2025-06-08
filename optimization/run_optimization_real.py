@@ -136,7 +136,7 @@ def main(args):
     print(f"Original image tensor shape: {img_orig_for_id.shape}")
     
     # force clean and format latent_code_init
-    latent_code_init = latent_code_init.detach().float().contiguous()
+    # latent_code_init = latent_code_init.detach().float().contiguous()
     
     # clean up before StyleGAN forward propagation
     gc.collect()
