@@ -7,8 +7,8 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-import criteria.clip_loss as clip_loss
-from criteria import id_loss
+import style_criteria.clip_loss as clip_loss
+from style_criteria import id_loss
 from mapper.datasets.latents_dataset import LatentsDataset, StyleSpaceLatentsDataset
 from mapper.styleclip_mapper import StyleCLIPMapper
 from mapper.training.ranger import Ranger

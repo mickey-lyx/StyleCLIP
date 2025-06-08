@@ -11,8 +11,8 @@ from PIL import Image
 import dlib
 from argparse import Namespace
 
-from criteria.clip_loss import CLIPLoss
-from criteria.id_loss import IDLoss
+from style_criteria.clip_loss import CLIPLoss
+from style_criteria.id_loss import IDLoss
 from mapper.training.train_utils import STYLESPACE_DIMENSIONS
 from style_models.stylegan2.model import Generator
 import clip
